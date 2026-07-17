@@ -255,11 +255,23 @@ export default function DashboardView({
     });
   }, [programs]);
 
-  // 3. Top Execution Issues & Decision Needed for DZ (Priority is Critical or High)
+  // 3. Top Execution Issues & Decision Needed for DZ (Priority sorted from Critical, High, Medium, to Low)
   const topIssues = useMemo(() => {
-    return programs
+    const priorityOrder: Record<string, number> = {
+      "Critical": 1,
+      "High": 2,
+      "Medium": 3,
+      "Low": 4
+    };
+
+    return [...programs]
       .filter(p => p.priority === "Critical" || p.priority === "High" || p.decisionNeeded === "Yes")
-      .slice(0, 5); // display top 5
+      .sort((a, b) => {
+        const scoreA = priorityOrder[a.priority] || 99;
+        const scoreB = priorityOrder[b.priority] || 99;
+        return scoreA - scoreB;
+      })
+      .slice(0, 10); // display top 10 prioritized issues
   }, [programs]);
 
   // 5. Risk Heatmap Calculations
