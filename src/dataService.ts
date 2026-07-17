@@ -1,55 +1,6 @@
-import { ProgramJob, MeetingLog, CloudDocument, AttachmentFile, UserAccount } from "./types";
+import { ProgramJob, MeetingLog, CloudDocument, AttachmentFile } from "./types";
 import { initialPrograms, initialLogs } from "./mockData";
 import { safeStorage } from "./safeStorage";
-import { db, auth, OperationType, handleFirestoreError } from "./firebase";
-import { signInAnonymously } from "firebase/auth";
-import { 
-  collection, 
-  doc, 
-  getDoc, 
-  getDocs, 
-  setDoc, 
-  updateDoc, 
-  deleteDoc, 
-  query, 
-  orderBy, 
-  writeBatch,
-  getDocFromServer
-} from "firebase/firestore";
-
-// Synchronize User session with Firebase Auth & Profile DB
-export async function syncUserWithFirebase(user: UserAccount | null): Promise<void> {
-  if (!user) {
-    return;
-  }
-  try {
-    // CRITICAL CONSTRAINT: Test connection initially
-    try {
-      await getDocFromServer(doc(db, "test", "connection"));
-    } catch (error) {
-      if (error instanceof Error && error.message.includes("the client is offline")) {
-        console.error("Please check your Firebase configuration.");
-      }
-    }
-
-    const userCredential = await signInAnonymously(auth);
-    const uid = userCredential.user.uid;
-    
-    // Store user session in users collection to satisfy security rules check
-    const userRef = doc(db, "users", uid);
-    await setDoc(userRef, {
-      email: user.email,
-      name: user.name,
-      role: user.role,
-      roleName: user.roleName,
-      ownerName: user.ownerName || ""
-    });
-    console.log("Firebase sync successful for user:", uid);
-  } catch (error) {
-    console.error("Failed to sync user with Firebase:", error);
-    throw error;
-  }
-}
 
 export function deduplicatePrograms(progs: ProgramJob[]): { unique: ProgramJob[], duplicates: ProgramJob[] } {
   const seenTopics = new Set<string>();
@@ -75,17 +26,17 @@ export function deduplicatePrograms(progs: ProgramJob[]): { unique: ProgramJob[]
   return { unique, duplicates };
 }
 
-// Local cache functions used as fallbacks
 function getLocalPrograms(): ProgramJob[] {
   const data = safeStorage.getItem("kai_programs");
   if (data) {
     try {
       const parsed = JSON.parse(data) as ProgramJob[];
       let modified = false;
-      const enriched = parsed.map((p) => {
+      const enriched = parsed.map((p, idx) => {
         let hasChanges = false;
         const up = { ...p };
 
+        // Robust owner cleaning / migration to the 8 allowed ones (DC, DJ, DN, DR, DS, DH, DI, DF)
         const validOwners = ["DC", "DJ", "DN", "DR", "DS", "DH", "DI", "DF"];
         const ownersList = (up.owner || "").split(",").map(o => o.trim()).filter(Boolean);
         const hasInvalidOwner = ownersList.some(o => !validOwners.includes(o));
@@ -101,6 +52,7 @@ function getLocalPrograms(): ProgramJob[] {
             if (cleanOpt === "KAWISTA" || cleanOpt === "CS" || cleanOpt === "CC" || cleanOpt === "KALOG" || cleanOpt === "RMU") return "DS";
             if (cleanOpt === "TE") return "DF";
             if (cleanOpt === "SCB") return "DJ";
+            // Default select based on name hash if completely unknown
             const hash = cleanOpt.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
             return validOwners[Math.abs(hash) % validOwners.length];
           });
@@ -109,6 +61,7 @@ function getLocalPrograms(): ProgramJob[] {
           hasChanges = true;
         }
 
+        // Clean & migrate ztRole to the 10 allowed ones
         const validRoles = [
           "Orchestrator",
           "Challenger",
@@ -141,6 +94,7 @@ function getLocalPrograms(): ProgramJob[] {
           hasChanges = true;
         }
 
+        // Ensure priority and riskLevel are synchronized on load
         if (up.riskLevel) {
           let expectedPriority: "Critical" | "High" | "Medium" | "Low" = "Medium";
           if (up.riskLevel === "Critical") expectedPriority = "Critical";
@@ -180,6 +134,7 @@ function getLocalPrograms(): ProgramJob[] {
     }
   }
   
+  // Initialize with initialPrograms
   const progs = initialPrograms.map((p, idx) => ({ 
     ...p, 
     id: `local-${idx}`
@@ -235,7 +190,7 @@ export function isQuotaExceeded(): boolean {
 export function resetQuotaStatus(): void {}
 
 export function isLocalFallbackActive(): boolean {
-  return false;
+  return true;
 }
 
 export function toggleLocalFallback(forceLocal: boolean): void {}
@@ -246,103 +201,38 @@ export function clearLocalFallbackCache(): void {
   safeStorage.removeItem("kai_documents");
 }
 
-// Check database empty state and seed standard corporate data inside Firestore
 export async function initializeDatabaseIfEmpty(): Promise<boolean> {
-  try {
-    const progCollection = collection(db, "programs");
-    const progSnapshot = await getDocs(progCollection);
-    
-    if (progSnapshot.empty) {
-      console.log("Firestore database empty. Seeding initial corporate data...");
-      const batch = writeBatch(db);
-      
-      initialPrograms.forEach((p, idx) => {
-        const id = `program-${idx + 1}`;
-        const ref = doc(db, "programs", id);
-        batch.set(ref, {
-          ...p,
-          id,
-          updatedAt: p.updatedAt || new Date().toISOString().replace("T", " ").substring(0, 16)
-        });
-      });
-      
-      initialLogs.forEach((l, idx) => {
-        const id = `log-${idx + 1}`;
-        const ref = doc(db, "meeting_logs", id);
-        batch.set(ref, {
-          ...l,
-          id
-        });
-      });
-      
-      await batch.commit();
-      console.log("Firebase seeding completed successfully!");
-    }
-    return true;
-  } catch (error) {
-    console.warn("Could not seed Firestore (possibly due to Viewer permissions or offline state). Graceful bypass.", error);
-    return false;
-  }
+  getLocalPrograms();
+  getLocalLogs();
+  return true;
 }
 
-// Retrieve all Programs sorted by 'no' ascending
+
 export async function getAllPrograms(): Promise<ProgramJob[]> {
-  try {
-    const q = query(collection(db, "programs"), orderBy("no", "asc"));
-    const snapshot = await getDocs(q);
-    const progs: ProgramJob[] = [];
-    snapshot.forEach(docSnap => {
-      progs.push({ id: docSnap.id, ...docSnap.data() } as ProgramJob);
-    });
-    saveLocalPrograms(progs);
-    return progs;
-  } catch (error) {
-    console.warn("getAllPrograms using offline cache:", error);
-    return getLocalPrograms();
-  }
+  return getLocalPrograms();
 }
 
-// Retrieve all Meeting Logs sorted by date descending
 export async function getAllMeetingLogs(): Promise<MeetingLog[]> {
-  try {
-    const q = query(collection(db, "meeting_logs"), orderBy("meetingDate", "desc"));
-    const snapshot = await getDocs(q);
-    const logs: MeetingLog[] = [];
-    snapshot.forEach(docSnap => {
-      logs.push({ id: docSnap.id, ...docSnap.data() } as MeetingLog);
-    });
-    saveLocalLogs(logs);
-    return logs;
-  } catch (error) {
-    console.warn("getAllMeetingLogs using offline cache:", error);
-    return getLocalLogs();
-  }
+  return getLocalLogs();
 }
 
-// Insert new program to Firestore
 export async function addNewProgram(program: Omit<ProgramJob, "id" | "no">): Promise<ProgramJob> {
-  const currentProgs = await getAllPrograms();
-  const nextNo = currentProgs.length > 0 ? Math.max(...currentProgs.map(p => p.no || 0)) + 1 : 1;
-  const nowStr = new Date().toISOString().replace("T", " ").substring(0, 16);
+  const currentProgs = getLocalPrograms();
+  const nextNo = currentProgs.length > 0 ? Math.max(...currentProgs.map(p => p.no)) + 1 : 1;
+  const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 16);
   
-  const tempId = `program-${Date.now()}`;
-  const payload: ProgramJob = {
+  const newProg: ProgramJob = {
+    id: `local-${Date.now()}`,
     ...program,
-    id: tempId,
     no: nextNo,
     updatedAt: nowStr
   } as ProgramJob;
-
-  try {
-    await setDoc(doc(db, "programs", tempId), payload);
-    return payload;
-  } catch (error) {
-    handleFirestoreError(error, OperationType.CREATE, `programs/${tempId}`);
-    throw error;
-  }
+  
+  currentProgs.push(newProg);
+  saveLocalPrograms(currentProgs);
+  return newProg;
 }
 
-// Atomically record progress updates & add a meeting log (Pillar 7 Atomicity)
 export async function updateProgramAndLogMeeting(
   programId: string,
   updatedFields: Partial<ProgramJob>,
@@ -358,21 +248,19 @@ export async function updateProgramAndLogMeeting(
     documentLink?: string;
   }
 ): Promise<void> {
-  const meetingDate = new Date().toISOString().replace("T", " ").substring(0, 16);
+  const meetingDate = new Date().toISOString().replace('T', ' ').substring(0, 16);
   const fieldsWithTime = {
     ...updatedFields,
     updatedAt: meetingDate
   };
-
-  const batch = writeBatch(db);
-  const progRef = doc(db, "programs", programId);
-  batch.update(progRef, fieldsWithTime);
-
-  const logId = `log-${Date.now()}`;
-  const logRef = doc(db, "meeting_logs", logId);
   
+  const localProgs = getLocalPrograms();
+  const updatedProgs = localProgs.map(p => p.id === programId ? { ...p, ...fieldsWithTime } : p);
+  saveLocalPrograms(updatedProgs);
+  
+  const localLogs = getLocalLogs();
   const newLogRecord: MeetingLog = {
-    id: logId,
+    id: `local-log-${Date.now()}`,
     programId,
     programTitle: logDetails.programTitle,
     meetingDate,
@@ -385,114 +273,67 @@ export async function updateProgramAndLogMeeting(
     files: logDetails.files || [],
     documentLink: logDetails.documentLink || ""
   };
-  batch.set(logRef, newLogRecord);
-
-  try {
-    await batch.commit();
-  } catch (error) {
-    handleFirestoreError(error, OperationType.WRITE, `programs/${programId} + meeting_logs/${logId}`);
-    throw error;
-  }
+  localLogs.unshift(newLogRecord);
+  saveLocalLogs(localLogs);
 }
 
-// Update program attributes only
 export async function updateProgramFieldsOnly(
   programId: string,
   updatedFields: Partial<ProgramJob>
 ): Promise<void> {
-  const meetingDate = new Date().toISOString().replace("T", " ").substring(0, 16);
+  const meetingDate = new Date().toISOString().replace('T', ' ').substring(0, 16);
   const fieldsWithTime = {
     ...updatedFields,
     updatedAt: meetingDate
   };
-
-  try {
-    const progRef = doc(db, "programs", programId);
-    await updateDoc(progRef, fieldsWithTime);
-  } catch (error) {
-    handleFirestoreError(error, OperationType.UPDATE, `programs/${programId}`);
-    throw error;
-  }
+  
+  const localProgs = getLocalPrograms();
+  const updatedProgs = localProgs.map(p => p.id === programId ? { ...p, ...fieldsWithTime } : p);
+  saveLocalPrograms(updatedProgs);
 }
 
-// Delete program
 export async function deleteProgram(programId: string): Promise<void> {
-  try {
-    const progRef = doc(db, "programs", programId);
-    await deleteDoc(progRef);
-  } catch (error) {
-    handleFirestoreError(error, OperationType.DELETE, `programs/${programId}`);
-    throw error;
-  }
+  const localProgs = getLocalPrograms();
+  const updatedProgs = localProgs.filter(p => p.id !== programId);
+  saveLocalPrograms(updatedProgs);
 }
 
-// Cloud Documents Retrieve
 export async function getAllCloudDocuments(): Promise<CloudDocument[]> {
-  try {
-    const q = query(collection(db, "cloud_documents"), orderBy("createdAt", "desc"));
-    const snapshot = await getDocs(q);
-    const docs: CloudDocument[] = [];
-    snapshot.forEach(docSnap => {
-      docs.push({ id: docSnap.id, ...docSnap.data() } as CloudDocument);
-    });
-    saveLocalDocuments(docs);
-    return docs;
-  } catch (error) {
-    console.warn("getAllCloudDocuments using offline cache:", error);
-    return getLocalDocuments();
-  }
+  return getLocalDocuments();
 }
 
-// Add new cloud document
 export async function addNewCloudDocument(docFields: Omit<CloudDocument, "id">): Promise<CloudDocument> {
-  const nowStr = new Date().toISOString().replace("T", " ").substring(0, 16);
-  const tempId = `doc-${Date.now()}`;
-  const payload: CloudDocument = {
+  const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 16);
+  const payload = {
     ...docFields,
-    id: tempId,
     createdAt: nowStr
+  };
+  
+  const newDoc: CloudDocument = {
+    id: `local-${Date.now()}`,
+    ...payload
   } as CloudDocument;
-
-  try {
-    await setDoc(doc(db, "cloud_documents", tempId), payload);
-    return payload;
-  } catch (error) {
-    handleFirestoreError(error, OperationType.CREATE, `cloud_documents/${tempId}`);
-    throw error;
-  }
+  
+  const currentDocs = getLocalDocuments();
+  currentDocs.unshift(newDoc);
+  saveLocalDocuments(currentDocs);
+  return newDoc;
 }
 
-// Delete cloud document
 export async function deleteCloudDocument(docId: string): Promise<void> {
-  try {
-    const docRef = doc(db, "cloud_documents", docId);
-    await deleteDoc(docRef);
-  } catch (error) {
-    handleFirestoreError(error, OperationType.DELETE, `cloud_documents/${docId}`);
-    throw error;
-  }
+  const localDocs = getLocalDocuments();
+  const updatedDocs = localDocs.filter(d => d.id !== docId);
+  saveLocalDocuments(updatedDocs);
 }
 
-// Clear all records
 export async function clearAllProgramsAndLogs(): Promise<void> {
-  try {
-    const batch = writeBatch(db);
-    const programsSnap = await getDocs(collection(db, "programs"));
-    programsSnap.forEach(d => batch.delete(d.ref));
-
-    const logsSnap = await getDocs(collection(db, "meeting_logs"));
-    logsSnap.forEach(d => batch.delete(d.ref));
-
-    await batch.commit();
-  } catch (error) {
-    console.error("Could not clear cloud DB, resetting local only", error);
-  }
-  saveLocalPrograms([]);
-  saveLocalLogs([]);
+  safeStorage.setItem("kai_programs", JSON.stringify([]));
+  safeStorage.setItem("kai_logs", JSON.stringify([]));
 }
 
-// Hard Reset Database with original datasets
 export async function forceResetDatabaseWithStandardCorporateData(): Promise<void> {
-  await clearAllProgramsAndLogs();
-  await initializeDatabaseIfEmpty();
+  safeStorage.removeItem("kai_programs");
+  safeStorage.removeItem("kai_logs");
+  getLocalPrograms();
+  getLocalLogs();
 }
