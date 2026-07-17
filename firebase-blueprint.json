@@ -1,0 +1,117 @@
+{
+  "entities": {
+    "AttachmentFile": {
+      "title": "AttachmentFile",
+      "description": "Structure for a base64 encoded uploaded file attachment",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "size": {
+          "type": "number"
+        },
+        "dataUrl": {
+          "type": "string"
+        }
+      },
+      "required": ["name", "type", "size", "dataUrl"]
+    },
+    "ProgramJob": {
+      "title": "ProgramJob",
+      "description": "Core strategic transformation program record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "no": { "type": "number" },
+        "updatedAt": { "type": "string" },
+        "topic": { "type": "string", "maxLength": 1000 },
+        "cluster": { "type": "string", "enum": ["Strategic Transformation", "Corporate Culture", "Change Management", "Investment Governance", "Corporate Insight"] },
+        "owner": { "type": "string" },
+        "request": { "type": "string" },
+        "ztRole": { "type": "string" },
+        "strategicImpact": { "type": "string" },
+        "phase": { "type": "string" },
+        "progress": { "type": "number" },
+        "statusTracker": { "type": "string", "enum": ["Green", "Yellow", "Red", "Blocked"] },
+        "currentMilestone": { "type": "string" },
+        "keyIssue": { "type": "string" },
+        "actionPlan": { "type": "string" },
+        "deadline": { "type": "string" },
+        "decisionNeeded": { "type": "string", "enum": ["Yes", "No"] },
+        "dzIntervention": { "type": "string" },
+        "ztPic": { "type": "string" },
+        "confidence": { "type": "string", "enum": ["High", "Medium", "Low", "No-Go"] },
+        "strategicFit": { "type": "string", "enum": ["High", "Medium", "Low"] },
+        "priority": { "type": "string", "enum": ["Critical", "High", "Medium", "Low"] },
+        "documentLink": { "type": "string" },
+        "justificationConceptor": { "type": "string" },
+        "riskType": { "type": "string" },
+        "riskIssue": { "type": "string" },
+        "riskProgram": { "type": "string" },
+        "riskImpact": { "type": "number" },
+        "riskProbability": { "type": "number" },
+        "riskLevelScore": { "type": "number" },
+        "riskLevel": { "type": "string" },
+        "riskMitigation": { "type": "string" },
+        "riskOwner": { "type": "string" },
+        "riskStatus": { "type": "string" },
+        "riskEscalationTo": { "type": "string" },
+        "clearThePath": { "type": "string" },
+        "notes": { "type": "string" }
+      },
+      "required": ["topic", "cluster", "owner", "ztRole", "phase", "progress", "statusTracker", "priority"]
+    },
+    "MeetingLog": {
+      "title": "MeetingLog",
+      "description": "Log record for Minutes of Meeting or progress updates",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "programId": { "type": "string" },
+        "programTitle": { "type": "string" },
+        "meetingDate": { "type": "string" },
+        "notes": { "type": "string" },
+        "previousStatus": { "type": "string" },
+        "newStatus": { "type": "string" },
+        "previousProgress": { "type": "number" },
+        "newProgress": { "type": "number" },
+        "recordedBy": { "type": "string" },
+        "documentLink": { "type": "string" }
+      },
+      "required": ["programId", "programTitle", "meetingDate", "notes", "previousStatus", "newStatus", "previousProgress", "newProgress", "recordedBy"]
+    },
+    "CloudDocument": {
+      "title": "CloudDocument",
+      "description": "Cloud document / formal letter record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "tanggalSurat": { "type": "string" },
+        "noSurat": { "type": "string" },
+        "asalSurat": { "type": "string" },
+        "prihal": { "type": "string" },
+        "uploadedBy": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["tanggalSurat", "noSurat", "asalSurat", "prihal"]
+    }
+  },
+  "firestore": {
+    "programs": {
+      "schema": { "$ref": "#/entities/ProgramJob" },
+      "description": "Collection storing all main transformation programs"
+    },
+    "meeting_logs": {
+      "schema": { "$ref": "#/entities/MeetingLog" },
+      "description": "Collection storing Minutes of Meetings & history logs"
+    },
+    "cloud_documents": {
+      "schema": { "$ref": "#/entities/CloudDocument" },
+      "description": "Collection storing incoming formal documents metadata"
+    }
+  }
+}

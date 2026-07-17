@@ -1,0 +1,8 @@
+{
+  "name": "Remix: ZT Cockpit Dashboard Rev02",
+  "description": "A corporate transformation executive dashboard for monitoring and updating projects with program tracking, reports, and history logs.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

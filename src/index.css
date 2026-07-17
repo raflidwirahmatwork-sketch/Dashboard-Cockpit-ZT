@@ -1,0 +1,136 @@
+@import "tailwindcss";
+
+@theme {
+  --color-indigo-50: #f1f2fa;
+  --color-indigo-100: #e0e2f5;
+  --color-indigo-200: #c2c7eb;
+  --color-indigo-300: #9ba1dd;
+  --color-indigo-400: #6d75cc;
+  --color-indigo-500: #4249b5;
+  --color-indigo-600: #1e266f; /* PT KAI Navy Blue */
+  --color-indigo-650: #191f5c;
+  --color-indigo-700: #141a4a;
+  --color-indigo-800: #101438;
+  --color-indigo-900: #0c0e27;
+  --color-indigo-950: #060714;
+  
+  --color-orange-50: #fef7f2;
+  --color-orange-100: #fdeee2;
+  --color-orange-200: #fcd5b8;
+  --color-orange-300: #f9b585;
+  --color-orange-400: #f68e4c;
+  --color-orange-500: #f36e21; /* PT KAI Orange */
+  --color-orange-600: #db5610;
+  --color-orange-700: #b6410a;
+  --color-orange-800: #91340b;
+  --color-orange-900: #762d0c;
+  --color-orange-950: #401402;
+
+  --color-brand-orange: #f36e21;
+  --color-brand-blue: #1e266f;
+}
+
+::selection {
+  background-color: #f36e21 !important;
+  color: white !important;
+}
+
+
+/* 
+  Custom Sleek Scrollbar Styles 
+  Guarantees scrollbars are always visible, polished, and match the corporate style.
+*/
+
+::-webkit-scrollbar {
+  -webkit-appearance: none !important;
+  width: 12px;
+  height: 12px;
+  display: block !important;
+}
+
+::-webkit-scrollbar-track {
+  -webkit-appearance: none !important;
+  background: #f1f5f9 !important;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+::-webkit-scrollbar-thumb {
+  -webkit-appearance: none !important;
+  background: #94a3b8 !important; /* Elegant Slate-400 for high visibility */
+  border-radius: 6px !important;
+  border: 2px solid #f1f5f9 !important;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  -webkit-appearance: none !important;
+  background: #64748b !important; /* Darker Slate-500 on hover */
+}
+
+/* Firefox compatibility */
+* {
+  scrollbar-width: auto !important;
+  scrollbar-color: #1e293b #cbd5e1 !important;
+}
+
+/* Specific class to force scrollbar layout display and keep it visible */
+.custom-scrollbar-always {
+  overflow-x: scroll !important;
+  overflow-y: scroll !important;
+  -webkit-overflow-scrolling: touch !important; /* Smooth touch scroll for iOS/macOS */
+}
+
+/* Custom Scrollbar Styles for the Table/Spreadsheet */
+.custom-scrollbar-always::-webkit-scrollbar {
+  width: 12px !important;      /* Vertical scrollbar width */
+  height: 12px !important;     /* Horizontal scrollbar height */
+  display: block !important;
+}
+
+/* The scrollbar track (the background) */
+.custom-scrollbar-always::-webkit-scrollbar-track {
+  background: #cbd5e1 !important;       /* Solid Slate-300 track for super high visibility */
+  border: 1px solid #94a3b8 !important; /* Clear border defining the track boundaries */
+  border-radius: 4px !important;
+}
+
+/* The scrollbar handle (thumb) */
+.custom-scrollbar-always::-webkit-scrollbar-thumb {
+  background: #1e293b !important;       /* Deep dark Slate-800 thumb so it stands out immediately */
+  border: 2px solid #cbd5e1 !important; /* Creates a clean gap/padding around the thumb */
+  border-radius: 4px !important;
+  transition: background-color 0.2s ease !important;
+}
+
+/* The thumb on hover */
+.custom-scrollbar-always::-webkit-scrollbar-thumb:hover {
+  background: #0f172a !important;       /* Even darker Slate-900 on hover for active feedback */
+}
+
+/* The corner where both scrollbars meet */
+.custom-scrollbar-always::-webkit-scrollbar-corner {
+  background: #cbd5e1 !important;
+}
+
+/* 
+  Fix Chrome/Safari/Edge Sticky Columns Rendering Bug
+  Forces GPU rendering (compositing) to prevent inputs and text inside 
+  sticky table cells from disappearing, flickering, or rendering blank on scroll.
+*/
+.sticky {
+  transform: translateZ(0) !important;
+  -webkit-transform: translateZ(0) !important;
+  backface-visibility: hidden !important;
+  -webkit-backface-visibility: hidden !important;
+}
+
+/* 
+  Seamless Sticky Row Hover Compatibility
+  Ensures that when a row is hovered, its sticky cells match the hover color 
+  of the non-sticky cells, providing a cohesive and polished spreadsheet design.
+*/
+tr:hover td.sticky {
+  background-color: #f5f7ff !important; /* Matches hover:bg-indigo-50/25 perfectly */
+}
+
+
