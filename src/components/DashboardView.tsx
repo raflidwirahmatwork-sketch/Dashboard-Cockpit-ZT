@@ -271,7 +271,7 @@ export default function DashboardView({
         const scoreB = priorityOrder[b.priority] || 99;
         return scoreA - scoreB;
       })
-      .slice(0, 10); // display top 10 prioritized issues
+      .slice(0, 5); // display top 5 prioritized issues
   }, [programs]);
 
   // 5. Risk Heatmap Calculations
