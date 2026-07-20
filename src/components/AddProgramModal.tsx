@@ -11,6 +11,7 @@ interface AddProgramModalProps {
 export default function AddProgramModal({ isOpen, onClose, onSubmit }: AddProgramModalProps) {
   // -- SECTION 1: Program Tracker States --
   const [topic, setTopic] = useState("");
+  const [subTopic, setSubTopic] = useState("");
   const [cluster, setCluster] = useState<ProgramJob["cluster"]>("Strategic Transformation");
   const [owner, setOwner] = useState("");
   const [ownerDropdownOpen, setOwnerDropdownOpen] = useState(false);
@@ -142,6 +143,7 @@ export default function AddProgramModal({ isOpen, onClose, onSubmit }: AddProgra
     onSubmit({
       // Core fields
       topic,
+      subTopic,
       cluster,
       owner,
       ztRole,
@@ -184,6 +186,7 @@ export default function AddProgramModal({ isOpen, onClose, onSubmit }: AddProgra
 
     // Reset All Forms to default
     setTopic("");
+    setSubTopic("");
     setOwner("");
     setStrategicImpact("");
     setCurrentMilestone("");
@@ -265,6 +268,19 @@ export default function AddProgramModal({ isOpen, onClose, onSubmit }: AddProgra
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
                   placeholder="e.g. Migration of Legacy Core Ledger"
+                  className="w-full text-xs font-medium bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-3 py-2.5 outline-none transition-colors text-slate-800 shadow-sm"
+                />
+              </div>
+
+              <div className="col-span-12 md:col-span-3">
+                <label className="block text-[10px] font-bold text-slate-600 mb-1.5 uppercase tracking-wider">
+                  Sub Topic
+                </label>
+                <input
+                  type="text"
+                  value={subTopic}
+                  onChange={(e) => setSubTopic(e.target.value)}
+                  placeholder="Input sub topic..."
                   className="w-full text-xs font-medium bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-3 py-2.5 outline-none transition-colors text-slate-800 shadow-sm"
                 />
               </div>

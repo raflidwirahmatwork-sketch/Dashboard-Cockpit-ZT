@@ -12,6 +12,7 @@ export interface ProgramJob {
   
   // -- Section 1: Program Tracker --
   topic: string;
+  subTopic?: string;
   cluster: "Strategic Transformation" | "Corporate Culture" | "Change Management" | "Investment Governance" | "Corporate Insight";
   owner: string;
   request?: "From DZ" | "Not DZ" | "";

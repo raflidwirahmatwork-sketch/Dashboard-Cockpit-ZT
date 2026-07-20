@@ -354,21 +354,29 @@ export default function App() {
 
           {/* User Profile & Logout section */}
           <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-            <div className="flex flex-col text-right hidden xs:block">
-              <span className="text-xs font-black text-slate-800 leading-none flex items-center gap-1 justify-end">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                {currentUser.name || currentUser.roleName}
-              </span>
-              {currentUser.name && (
-                <span className="text-[8px] text-[#1e266f] font-mono tracking-wider mt-1.5 uppercase font-extrabold bg-[#1e266f]/5 px-2 py-0.5 rounded-full border border-[#1e266f]/10 block">
-                  {currentUser.roleName}
+            {/* Identitas Hak Akses (Moved to header) */}
+            <div className="flex items-center gap-2 sm:gap-3 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 shadow-sm max-h-[46px]">
+              <div className="p-1 bg-[#1e266f]/5 text-[#1e266f] rounded-lg border border-[#1e266f]/10 hidden sm:block shrink-0">
+                <Activity className="w-4 h-4 text-[#f36e21]" />
+              </div>
+              <div className="flex flex-col text-left font-sans">
+                <span className="text-[9px] text-slate-400 font-mono font-bold uppercase tracking-wider leading-none">
+                  Identitas Hak Akses
                 </span>
-              )}
+                <div className="flex items-center gap-1.5 mt-1">
+                  <span className="text-xs font-black text-slate-800 leading-none">
+                    {currentUser.name || currentUser.roleName}
+                  </span>
+                  <span className="text-[9px] bg-[#1e266f] text-white px-1.5 py-0.5 rounded font-mono font-semibold uppercase shrink-0 leading-none">
+                    {currentUser.role}
+                  </span>
+                </div>
+              </div>
             </div>
             
             <button
               onClick={handleLogout}
-              className="flex items-center gap-1.5 px-3 py-2 bg-red-50 hover:bg-red-100 text-red-650 rounded-xl text-[10px] font-black tracking-wider uppercase transition-colors border border-red-250 cursor-pointer active:scale-95"
+              className="flex items-center gap-1.5 px-3 py-2 bg-red-50 hover:bg-red-100 text-red-650 rounded-xl text-[10px] font-black tracking-wider uppercase transition-colors border border-red-250 cursor-pointer active:scale-95 self-stretch"
               title="Keluar dari Akun"
             >
               <LogOut className="w-3.5 h-3.5" />

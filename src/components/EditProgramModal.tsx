@@ -16,6 +16,7 @@ export default function EditProgramModal({ isOpen, program, onClose, onSubmit }:
 
   // -- SECTION 1: Program Tracker States --
   const [topic, setTopic] = useState("");
+  const [subTopic, setSubTopic] = useState("");
   const [cluster, setCluster] = useState<ProgramJob["cluster"]>("Strategic Transformation");
   const [owner, setOwner] = useState("");
   const [ownerDropdownOpen, setOwnerDropdownOpen] = useState(false);
@@ -76,6 +77,7 @@ export default function EditProgramModal({ isOpen, program, onClose, onSubmit }:
   useEffect(() => {
     if (program) {
       setTopic(program.topic || "");
+      setSubTopic(program.subTopic || "");
       setCluster(program.cluster || "Strategic Transformation");
       setOwner(program.owner || "");
       setZtRole(program.ztRole || "");
@@ -199,6 +201,7 @@ export default function EditProgramModal({ isOpen, program, onClose, onSubmit }:
 
     const updatedFields: Partial<ProgramJob> = {
       topic,
+      subTopic,
       cluster,
       owner,
       ztRole,
@@ -361,6 +364,19 @@ export default function EditProgramModal({ isOpen, program, onClose, onSubmit }:
                     className="w-full text-xs font-semibold bg-white border border-slate-200 hover:border-slate-350 focus:border-indigo-500 rounded-lg p-3 outline-none transition-colors text-slate-800 shadow-sm resize-none"
                   />
                   <p className="text-[10 px] text-slate-400 mt-1">Spacious text field allows seeing complete title when typing.</p>
+                </div>
+
+                <div className="col-span-12 md:col-span-3">
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                    Sub Topic
+                  </label>
+                  <input
+                    type="text"
+                    value={subTopic}
+                    onChange={(e) => setSubTopic(e.target.value)}
+                    placeholder="Input sub topic..."
+                    className="w-full text-xs font-medium bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-3 py-2.5 outline-none transition-colors text-slate-800 shadow-sm"
+                  />
                 </div>
 
                  <div className="col-span-12 md:col-span-3">

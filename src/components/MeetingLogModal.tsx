@@ -366,6 +366,11 @@ export default function MeetingLogModal({
                       <span className="text-[9px] bg-slate-900 text-slate-100 font-extrabold uppercase px-2.5 py-0.5 rounded font-mono">
                         Initiative No. {activeProgram.no || "TBA"}
                       </span>
+                      {activeProgram.subTopic && (
+                        <span className="text-[9px] bg-slate-100 text-slate-800 border border-slate-200 font-extrabold uppercase px-2.5 py-0.5 rounded font-mono">
+                          {activeProgram.subTopic}
+                        </span>
+                      )}
                       <span className="text-[9px] bg-indigo-50 text-indigo-800 font-extrabold uppercase px-2.5 py-0.5 rounded font-mono">
                         {activeProgram.cluster || "No Cluster"}
                       </span>

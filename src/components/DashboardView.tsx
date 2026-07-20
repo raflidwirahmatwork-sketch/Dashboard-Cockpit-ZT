@@ -291,46 +291,26 @@ export default function DashboardView({
   return (
     <div className="space-y-6">
 
-      {/* Role-based Welcoming and Personal Filtering Banner */}
-      {currentUser && (
-        <div className="bg-white border border-slate-200 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm bg-gradient-to-r from-white via-white to-slate-50">
-          <div className="flex items-center gap-3 self-start sm:self-center">
-            <div className="p-2.5 bg-[#1e266f]/5 text-[#1e266f] rounded-xl border border-[#1e266f]/10">
-              <Activity className="w-5 h-5 text-[#f36e21]" />
-            </div>
-            <div>
-              <div className="text-[10px] text-slate-400 font-mono font-bold uppercase tracking-wider">Identitas Hak Akses</div>
-              <h3 className="text-sm font-black text-slate-800 flex items-center gap-2">
-                <span>{currentUser.name || currentUser.roleName}</span>
-                <span className="text-[10px] bg-[#1e266f] text-white px-2 py-0.5 rounded-full font-mono font-normal">
-                  {currentUser.role}
-                </span>
-              </h3>
-              {currentUser.name && <p className="text-xs text-slate-500 mt-0.5">{currentUser.roleName}</p>}
-            </div>
-          </div>
-
-          {currentUser.role === "TEAM_INTERNAL" && currentUser.ownerName && (
-            <div className="flex items-center gap-3 bg-[#f36e21]/5 px-3 py-2 rounded-xl border border-[#f36e21]/15 self-end sm:self-center">
-              <span className="text-xs font-bold text-[#1e266f]">Filter Program Saya ({currentUser.ownerName}):</span>
-              <button
-                type="button"
-                onClick={() => setOnlyMyPrograms(!onlyMyPrograms)}
-                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                  onlyMyPrograms ? "bg-[#f36e21]" : "bg-slate-250"
-                }`}
-              >
-                <span
-                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition duration-200 ease-in-out ${
-                    onlyMyPrograms ? "translate-x-5" : "translate-x-0"
-                  }`}
-                />
-              </button>
-              <span className="text-[10px] font-black uppercase text-slate-500 font-mono w-10">
-                {onlyMyPrograms ? "AKTIF" : "OFF"}
-              </span>
-            </div>
-          )}
+      {/* Standalone Filter for TEAM_INTERNAL Users */}
+      {currentUser && currentUser.role === "TEAM_INTERNAL" && currentUser.ownerName && (
+        <div className="flex items-center justify-end gap-3 bg-white border border-slate-200 px-4 py-2 rounded-xl shadow-sm max-w-max ml-auto font-sans">
+          <span className="text-xs font-bold text-[#1e266f]">Filter Program Saya ({currentUser.ownerName}):</span>
+          <button
+            type="button"
+            onClick={() => setOnlyMyPrograms(!onlyMyPrograms)}
+            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+              onlyMyPrograms ? "bg-[#f36e21]" : "bg-slate-250"
+            }`}
+          >
+            <span
+              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition duration-200 ease-in-out ${
+                onlyMyPrograms ? "translate-x-5" : "translate-x-0"
+              }`}
+            />
+          </button>
+          <span className="text-[10px] font-black uppercase text-slate-500 font-mono w-10">
+            {onlyMyPrograms ? "AKTIF" : "OFF"}
+          </span>
         </div>
       )}
       

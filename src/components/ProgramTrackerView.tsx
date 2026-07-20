@@ -28,7 +28,8 @@ import {
   ChevronUp,
   TrendingUp,
   CheckSquare,
-  ShieldAlert
+  ShieldAlert,
+  MoreVertical
 } from "lucide-react";
 
 interface ProgramTrackerViewProps {
@@ -299,7 +300,19 @@ export default function ProgramTrackerView({
   const [selectedPriority, setSelectedPriority] = useState<string>("All");
   const [selectedPhase, setSelectedPhase] = useState<string>("All");
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [activeActionDropdownId, setActiveActionDropdownId] = useState<string | null>(null);
   const [onlyMyPrograms, setOnlyMyPrograms] = useState(false);
+  
+  // Close actions dropdown when clicking anywhere else
+  useEffect(() => {
+    const handleOutsideClick = () => {
+      setActiveActionDropdownId(null);
+    };
+    window.addEventListener("click", handleOutsideClick);
+    return () => {
+      window.removeEventListener("click", handleOutsideClick);
+    };
+  }, []);
   
   // Responsive layout configuration state
   const [viewMode, setViewMode] = useState<"card" | "spreadsheet">("spreadsheet");
@@ -382,7 +395,7 @@ export default function ProgramTrackerView({
 
   const totalActiveCols = useMemo(() => {
     let cols = 3; // No, Topic, Actions
-    if (isColVisible("I")) cols += 19;
+    if (isColVisible("I")) cols += 20;
     if (isColVisible("III")) cols += 9;
     if (isColVisible("V")) cols += 3;
     return cols;
@@ -392,7 +405,7 @@ export default function ProgramTrackerView({
     const widths = ["40px", "240px"];
     if (activeSectionTab === "All" || activeSectionTab === "I") {
       widths.push(
-        "160px", "120px", "120px", "120px", "120px", "120px", "100px",
+        "160px", "160px", "120px", "120px", "120px", "120px", "120px", "100px",
         "160px", "160px", "160px", "160px", "120px", "120px", "160px",
         "160px", "160px", "120px", "120px", "120px"
       );
@@ -405,7 +418,7 @@ export default function ProgramTrackerView({
     if (activeSectionTab === "All" || activeSectionTab === "V") {
       widths.push("160px", "160px", "160px");
     }
-    widths.push("115px");
+    widths.push("75px");
     return widths;
   }, [activeSectionTab]);
   
@@ -635,6 +648,7 @@ export default function ProgramTrackerView({
     const rows = filteredPrograms.map((p, idx) => ({
       "No": idx + 1,
       "Topic": p.topic,
+      "Sub Topic": p.subTopic || "",
       "Cluster": p.cluster,
       "Owner": p.owner,
       "ZT Role": p.ztRole,
@@ -1027,7 +1041,7 @@ export default function ProgramTrackerView({
                 
                 {/* Section 1 Group block */}
                 {isColVisible("I") && (
-                  <th colSpan={19} className="bg-[#26247b] border-b-2 border-r border-[#1d1b5c] text-white font-bold text-center py-2 uppercase text-[10px] tracking-widest font-mono">
+                  <th colSpan={20} className="bg-[#26247b] border-b-2 border-r border-[#1d1b5c] text-white font-bold text-center py-2 uppercase text-[10px] tracking-widest font-mono">
                     I. PROGRAM TRACKER
                   </th>
                 )}
@@ -1056,6 +1070,7 @@ export default function ProgramTrackerView({
                 {/* Section 1 Sub-Headers */}
                 {isColVisible("I") && (
                   <>
+                    <th className="py-2.5 px-2 cursor-pointer hover:bg-slate-100 transition-colors text-center font-bold text-[#1e266f]" onClick={() => handleSort("subTopic")}>Sub Topic</th>
                     <th className="py-2.5 px-2 cursor-pointer hover:bg-slate-100 transition-colors text-center" onClick={() => handleSort("cluster")}>Cluster</th>
                     <th className="py-2.5 px-2 cursor-pointer hover:bg-slate-100 transition-colors text-center" onClick={() => handleSort("owner")}>Unit Owner</th>
                     <th className="py-2.5 px-2 cursor-pointer hover:bg-slate-100 transition-colors text-center" onClick={() => handleSort("request")}>Request</th>
@@ -1495,6 +1510,16 @@ export default function ProgramTrackerView({
                     {/* ----------------- SECTION 1: PROGRAM TRACKER ----------------- */}
                     {isColVisible("I") && (
                       <>
+                        {/* Sub Topic */}
+                        <td className="py-1 px-1">
+                          <SpreadsheetCell
+                            value={p.subTopic || ""}
+                            onSave={(val) => handleSaveField(p.id, p, "subTopic", val)}
+                            className="font-medium text-slate-700 focus:bg-white text-left"
+                            placeholder="Input sub topic..."
+                          />
+                        </td>
+
                         {/* Cluster select dropdown */}
                         <td className="py-1 px-1">
                           <SpreadsheetSelectCell
@@ -1842,63 +1867,92 @@ export default function ProgramTrackerView({
                     )}
 
                     {/* Sticky Actions Column */}
-                    <td 
-                      className={`py-2 px-2 text-center sm:sticky sm:right-0 sm:z-10 border-l border-slate-200 sm:shadow-[-2px_0_5px_rgba(0,0,0,0.06)] min-w-[115px] ${stickyBgClass} group-hover:bg-slate-100/90 transition-colors`}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {confirmDeleteId === p.id ? (
-                        <div className="flex items-center justify-center gap-1.5 bg-rose-50/90 p-1 rounded-lg border border-rose-100 shadow-sm">
-                          <button
-                            onClick={() => {
-                              if (onDeleteProgram) onDeleteProgram(p.id);
-                              setConfirmDeleteId(null);
-                            }}
-                            className="p-1.5 bg-rose-600 text-white hover:bg-rose-700 rounded-md transition-colors shadow-sm flex items-center justify-center cursor-pointer"
-                            title="Ya, Hapus"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                          <button 
-                            onClick={() => setConfirmDeleteId(null)}
-                            className="p-1.5 bg-white border border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-50 rounded-md transition-colors flex items-center justify-center cursor-pointer"
-                            title="Batal"
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="flex items-center justify-center gap-1.5">
-                          {(currentUser?.role === "ADMIN" || currentUser?.role === "TEAM_INTERNAL") && (
-                            <button
-                              onClick={() => onEditProgramClick(p)}
-                              className="p-1.5 text-indigo-600 hover:text-indigo-700 bg-indigo-50/60 hover:bg-indigo-100/90 border border-indigo-100 rounded-lg transition-all duration-150 shadow-sm flex items-center justify-center cursor-pointer"
-                              title="Edit Lengkap"
-                            >
-                              <Edit className="w-3.5 h-3.5" />
-                            </button>
-                          )}
+                    {(() => {
+                      const isActionActive = activeActionDropdownId === p.id || confirmDeleteId === p.id;
+                      const openDownwards = idx < 3;
+                      return (
+                        <td 
+                          className={`py-2 px-2 text-center sm:sticky sm:right-0 ${isActionActive ? "sm:z-25 z-25" : "sm:z-10 z-10"} border-l border-slate-200 sm:shadow-[-2px_0_5px_rgba(0,0,0,0.06)] min-w-[75px] ${stickyBgClass} group-hover:bg-slate-100/90 transition-colors`}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {confirmDeleteId === p.id ? (
+                            <div className="flex items-center justify-center gap-1 bg-rose-50/90 p-1 rounded-lg border border-rose-100 shadow-sm">
+                              <button
+                                onClick={() => {
+                                  if (onDeleteProgram) onDeleteProgram(p.id);
+                                  setConfirmDeleteId(null);
+                                }}
+                                className="p-1 bg-rose-600 text-white hover:bg-rose-700 rounded transition-colors shadow-sm flex items-center justify-center cursor-pointer"
+                                title="Ya, Hapus"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                              <button 
+                                onClick={() => setConfirmDeleteId(null)}
+                                className="p-1 bg-white border border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-50 rounded transition-colors flex items-center justify-center cursor-pointer"
+                                title="Batal"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="relative inline-block text-left">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActiveActionDropdownId(activeActionDropdownId === p.id ? null : p.id);
+                                }}
+                                className="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-all flex items-center justify-center cursor-pointer mx-auto"
+                                title="Aksi"
+                              >
+                                <MoreVertical className="w-4 h-4" />
+                              </button>
+    
+                              {activeActionDropdownId === p.id && (
+                                <div className={`absolute right-0 ${openDownwards ? "top-full mt-1" : "bottom-full mb-1"} z-50 w-28 bg-white border border-slate-200 rounded-lg shadow-xl py-1 divide-y divide-slate-100 font-sans`}>
+                              <button
+                                onClick={() => {
+                                  onUpdateProgressClick(p);
+                                  setActiveActionDropdownId(null);
+                                }}
+                                className="w-full flex items-center gap-2 px-3 py-1.5 text-left text-xs font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-950 transition-colors cursor-pointer"
+                              >
+                                <Eye className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                                <span>View</span>
+                              </button>
 
-                          <button
-                            onClick={() => onUpdateProgressClick(p)}
-                            className="p-1.5 text-sky-600 hover:text-sky-700 bg-sky-50/60 hover:bg-sky-100/90 border border-sky-100 rounded-lg transition-all duration-150 shadow-sm flex items-center justify-center cursor-pointer"
-                            title="Lihat Detail Program & Riwayat MoM"
-                          >
-                            <Eye className="w-3.5 h-3.5" />
-                          </button>
+                              {(currentUser?.role === "ADMIN" || currentUser?.role === "TEAM_INTERNAL") && (
+                                <button
+                                  onClick={() => {
+                                    onEditProgramClick(p);
+                                    setActiveActionDropdownId(null);
+                                  }}
+                                  className="w-full flex items-center gap-2 px-3 py-1.5 text-left text-xs font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-950 transition-colors cursor-pointer"
+                                >
+                                  <Edit className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                                  <span>Edit</span>
+                                </button>
+                              )}
 
-                          {currentUser?.role === "ADMIN" && (
-                            <button
-                              onClick={() => setConfirmDeleteId(p.id)}
-                              className="p-1.5 text-rose-500 hover:text-rose-600 bg-rose-50/60 hover:bg-rose-100/90 border border-rose-100 rounded-lg transition-all duration-150 shadow-sm flex items-center justify-center cursor-pointer"
-                              title="Hapus Program"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
+                              {currentUser?.role === "ADMIN" && (
+                                <button
+                                  onClick={() => {
+                                    setConfirmDeleteId(p.id);
+                                    setActiveActionDropdownId(null);
+                                  }}
+                                  className="w-full flex items-center gap-2 px-3 py-1.5 text-left text-xs font-semibold text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-colors cursor-pointer"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+                                  <span>Delete</span>
+                                </button>
+                              )}
+                            </div>
                           )}
                         </div>
                       )}
                     </td>
-
+                  );
+                })()}
                   </tr>
                 );
               })
