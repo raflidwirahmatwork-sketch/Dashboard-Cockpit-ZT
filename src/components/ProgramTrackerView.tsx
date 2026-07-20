@@ -104,7 +104,9 @@ function SpreadsheetCell({
       onBlur={handleBlur}
       onKeyDown={handleKeyDown}
       className={`w-full bg-transparent border border-transparent hover:border-slate-300 hover:bg-slate-50/50 focus:bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded px-1.5 py-1 text-xs outline-none transition-all duration-100 font-sans tracking-tight ${
-        !isFocused && (displayValue === "-" || displayValue === "0.0") ? "text-slate-400 font-medium text-center" : "text-slate-850 text-left"
+        !isFocused && (displayValue === "-" || displayValue === "0.0") 
+          ? "text-slate-400 font-medium text-center" 
+          : `text-slate-850 ${className.includes("text-center") ? "text-center" : className.includes("text-right") ? "text-right" : "text-left"}`
       } ${className}`}
     />
   );
@@ -384,6 +386,27 @@ export default function ProgramTrackerView({
     if (isColVisible("III")) cols += 9;
     if (isColVisible("V")) cols += 3;
     return cols;
+  }, [activeSectionTab]);
+
+  const colWidths = useMemo(() => {
+    const widths = ["40px", "240px"];
+    if (activeSectionTab === "All" || activeSectionTab === "I") {
+      widths.push(
+        "160px", "120px", "120px", "120px", "120px", "120px", "100px",
+        "160px", "160px", "160px", "160px", "120px", "120px", "160px",
+        "160px", "160px", "120px", "120px", "120px"
+      );
+    }
+    if (activeSectionTab === "All" || activeSectionTab === "III") {
+      widths.push(
+        "160px", "160px", "120px", "160px", "120px", "120px", "120px", "120px", "120px"
+      );
+    }
+    if (activeSectionTab === "All" || activeSectionTab === "V") {
+      widths.push("160px", "160px", "160px");
+    }
+    widths.push("115px");
+    return widths;
   }, [activeSectionTab]);
   
   // Sort control
@@ -983,55 +1006,9 @@ export default function ProgramTrackerView({
         >
           <table className={`table-fixed w-full text-left text-xs divide-y divide-slate-200 ${tableMinWidth} font-sans`}>
             <colgroup>
-              <col style={{ width: "40px" }} />
-              <col style={{ width: "240px" }} />
-              {/* Section 1 */}
-              {isColVisible("I") && (
-                <>
-                  <col style={{ width: "160px" }} />
-                  <col style={{ width: "120px" }} />
-                  <col style={{ width: "120px" }} />
-                  <col style={{ width: "120px" }} />
-                  <col style={{ width: "120px" }} />
-                  <col style={{ width: "120px" }} />
-                  <col style={{ width: "100px" }} />
-                  <col style={{ width: "160px" }} />
-                  <col style={{ width: "160px" }} />
-                  <col style={{ width: "160px" }} />
-                  <col style={{ width: "160px" }} /> {/* Key Issue */}
-                  <col style={{ width: "120px" }} /> {/* ZT Recommendation */}
-                  <col style={{ width: "120px" }} /> {/* Start Date */}
-                  <col style={{ width: "160px" }} /> {/* Deadline */}
-                  <col style={{ width: "160px" }} /> {/* Decision Needed */}
-                  <col style={{ width: "160px" }} />
-                  <col style={{ width: "120px" }} />
-                  <col style={{ width: "120px" }} />
-                  <col style={{ width: "120px" }} />
-                </>
-              )}
-              {/* Section 3 */}
-              {isColVisible("III") && (
-                <>
-                  <col style={{ width: "160px" }} />
-                  <col style={{ width: "160px" }} />
-                  <col style={{ width: "120px" }} />
-                  <col style={{ width: "160px" }} />
-                  <col style={{ width: "120px" }} />
-                  <col style={{ width: "120px" }} />
-                  <col style={{ width: "120px" }} />
-                  <col style={{ width: "120px" }} />
-                  <col style={{ width: "120px" }} />
-                </>
-              )}
-              {/* Section 5 */}
-              {isColVisible("V") && (
-                <>
-                  <col style={{ width: "160px" }} />
-                  <col style={{ width: "160px" }} />
-                  <col style={{ width: "160px" }} />
-                </>
-              )}
-              <col style={{ width: "115px" }} />
+              {colWidths.map((width, index) => (
+                <col key={index} style={{ width }} />
+              ))}
             </colgroup>
 
             <thead className="sticky top-0 z-30 shadow-sm select-none">
@@ -1938,7 +1915,7 @@ export default function ProgramTrackerView({
 
         {/* Responsive Card Grid View for Mobile & Tablet Viewports */}
         {viewMode === "card" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 p-5 bg-slate-100/50 max-h-[82vh] overflow-y-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 p-5 bg-slate-100/50 max-h-[82vh] overflow-y-auto flex-1 min-h-0">
             {filteredPrograms.length === 0 ? (
               <div className="col-span-full py-16 text-center text-slate-400 font-mono text-xs bg-white rounded-xl border border-dashed border-slate-200 shadow-3xs">
                 Tidak ada program yang memenuhi kriteria filter saat ini.
@@ -1979,7 +1956,7 @@ export default function ProgramTrackerView({
                 return (
                   <div 
                     key={item.id} 
-                    className={`bg-white border-y border-r border-slate-200 border-l-[5px] ${leftStripColor} rounded-xl shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between overflow-hidden group`}
+                    className={`bg-white border-y border-r border-slate-200 border-l-[5px] ${leftStripColor} rounded-xl shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between overflow-hidden group min-h-[220px]`}
                   >
                     {/* Card Header Section */}
                     <div className="p-4 border-b border-slate-100 bg-slate-50/45 flex flex-col gap-2">
