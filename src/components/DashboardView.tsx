@@ -845,101 +845,91 @@ export default function DashboardView({
           </div>
 
           {/* Premium Custom Gauge Visualizer */}
-          <div className="my-4 relative flex flex-col items-center">
+          <div className="my-5 relative flex flex-col items-center">
             {(() => {
               const clampedHealth = Math.max(0, Math.min(100, metrics.healthIndex));
               
               // Dynamic status color configuration following the health metrics logic:
               // >=80 (emerald/green), 65-79 (amber/yellow), <65 (rose/red)
-              let statusColorClass = "text-slate-900";
-              let statusColorHex = "#1e266f";
+              let statusColorClass = "text-amber-500";
+              let statusColorHex = "#f59e0b";
               if (clampedHealth >= 80) {
-                statusColorClass = "text-emerald-500";
+                statusColorClass = "text-emerald-600";
                 statusColorHex = "#10b981";
-              } else if (clampedHealth >= 40) {
+              } else if (clampedHealth >= 65) {
                 statusColorClass = "text-amber-500";
                 statusColorHex = "#f59e0b";
               } else {
                 statusColorClass = "text-rose-600";
-                statusColorHex = "#e11d48";
+                statusColorHex = "#f43f5e";
               }
 
-              // Angle from 180 (left) to 360 (right)
-              const pointerAngle = 180 + (clampedHealth / 100) * 180;
-              const pointerRad = (pointerAngle * Math.PI) / 180;
               const cx = 100;
-              const cy = 110;
-              const r = 74;
-              const px = cx + r * Math.cos(pointerRad);
-              const py = cy + r * Math.sin(pointerRad);
+              const cy = 100;
+              const r = 75;
 
-              // Helper for arc path string
-              const getArcPathStr = (startX: number, startY: number, endX: number, endY: number) => {
-                return `M ${startX} ${startY} A ${r} ${r} 0 0 1 ${endX} ${endY}`;
-              };
+              // Starting point (0%): 150 degrees
+              const startAngleRad = (150 * Math.PI) / 180;
+              const x0 = cx + r * Math.cos(startAngleRad);
+              const y0 = cy + r * Math.sin(startAngleRad);
 
-              // Let's pre-calculate segment points for exact styling
-              // Segment 1 (Intervensi DZ - Red/Rose): 0% - 40% (180 to 252 degrees)
-              const r1_s = (180 * Math.PI) / 180;
-              const r1_e = (252 * Math.PI) / 180;
-              const p1_sx = cx + r * Math.cos(r1_s);
-              const p1_sy = cy + r * Math.sin(r1_s);
-              const p1_ex = cx + r * Math.cos(r1_e);
-              const p1_ey = cy + r * Math.sin(r1_e);
+              // End point of 100% active: 390 degrees (150 + 240)
+              const x100 = cx + r * Math.cos((390 * Math.PI) / 180);
+              const y100 = cy + r * Math.sin((390 * Math.PI) / 180);
 
-              // Segment 2 (Perhatian - Amber/Yellow): 40% - 80% (252 to 324 degrees)
-              const r2_s = (252 * Math.PI) / 180;
-              const r2_e = (324 * Math.PI) / 180;
-              const p2_sx = cx + r * Math.cos(r2_s);
-              const p2_sy = cy + r * Math.sin(r2_s);
-              const p2_ex = cx + r * Math.cos(r2_e);
-              const p2_ey = cy + r * Math.sin(r2_e);
+              // End point of active part at current health percentage
+              const activeHealth = Math.max(0.1, clampedHealth);
+              const activeAngleDeg = 150 + activeHealth * 2.4;
+              const activeAngleRad = (activeAngleDeg * Math.PI) / 180;
+              const xp = cx + r * Math.cos(activeAngleRad);
+              const yp = cy + r * Math.sin(activeAngleRad);
 
-              // Segment 3 (Sehat - Green/Emerald): 80% - 100% (324 to 360 degrees)
-              const r3_s = (324 * Math.PI) / 180;
-              const r3_e = (360 * Math.PI) / 180;
-              const p3_sx = cx + r * Math.cos(r3_s);
-              const p3_sy = cy + r * Math.sin(r3_s);
-              const p3_ex = cx + r * Math.cos(r3_e);
-              const p3_ey = cy + r * Math.sin(r3_e);
+              // Large arc flag for active path: 1 if active angle span > 180 degrees (i.e. activeHealth > 75)
+              const activeLargeArcFlag = activeHealth > 75 ? 1 : 0;
 
               return (
                 <>
                   {/* Gauge Container with Relative Overlay positioning */}
                   <div className="relative w-full max-w-[240px]">
-                    <svg viewBox="0 0 200 125" className="w-full h-auto overflow-visible">
+                    <svg viewBox="0 0 200 150" className="w-full h-auto overflow-visible">
                       <defs>
-                        {/* Wavy fine filter effect or beautiful standard high-fidelity gradients */}
-                        <linearGradient id="g1" x1="0%" y1="100%" x2="100%" y2="0%">
-                          <stop offset="0%" stopColor="#e11d48" />
-                          <stop offset="100%" stopColor="#f43f5e" />
-                        </linearGradient>
-                        <linearGradient id="g2" x1="0%" y1="100%" x2="100%" y2="0%">
-                          <stop offset="0%" stopColor="#f59e0b" />
-                          <stop offset="100%" stopColor="#fbbf24" />
-                        </linearGradient>
-                        <linearGradient id="g3" x1="0%" y1="100%" x2="100%" y2="0%">
-                          <stop offset="0%" stopColor="#10b981" />
-                          <stop offset="100%" stopColor="#34d399" />
+                        {/* High-fidelity continuous color spectrum gradient matching mockup exactly */}
+                        <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor="#f43f5e" /> {/* Red-Rose */}
+                          <stop offset="45%" stopColor="#f59e0b" /> {/* Orange/Amber */}
+                          <stop offset="75%" stopColor="#eab308" /> {/* Yellow */}
+                          <stop offset="100%" stopColor="#10b981" /> {/* Green-Emerald */}
                         </linearGradient>
                       </defs>
 
-                      {/* 3 Segmented Paths with small gaps & rounded caps */}
-                      <path d={getArcPathStr(p1_sx, p1_sy, p1_ex, p1_ey)} fill="none" stroke="url(#g1)" strokeWidth="13" strokeLinecap="butt" />
-                      <path d={getArcPathStr(p2_sx, p2_sy, p2_ex, p2_ey)} fill="none" stroke="url(#g2)" strokeWidth="13" strokeLinecap="butt" />
-                      <path d={getArcPathStr(p3_sx, p3_sy, p3_ex, p3_ey)} fill="none" stroke="url(#g3)" strokeWidth="13" strokeLinecap="butt" />
+                      {/* 1. Full 100% Background path in light grayish-blue */}
+                      <path 
+                        d={`M ${x0} ${y0} A ${r} ${r} 0 1 1 ${x100} ${y100}`} 
+                        fill="none" 
+                        stroke="#f1f5f9" 
+                        strokeWidth="14" 
+                        strokeLinecap="round" 
+                      />
 
-                      {/* Interactive glowing pointer pulsing dot following current status color */}
-                      <circle cx={px} cy={py} r="10" style={{ fill: `${statusColorHex}33` }} />
-                      <circle cx={px} cy={py} r="5.5" style={{ fill: statusColorHex }} className="stroke-white stroke-[2px] shadow-sm" />
+                      {/* 2. Active part path layered on top with the continuous gradient */}
+                      <path 
+                        d={`M ${x0} ${y0} A ${r} ${r} 0 ${activeLargeArcFlag} 1 ${xp} ${yp}`} 
+                        fill="none" 
+                        stroke="url(#gaugeGradient)" 
+                        strokeWidth="14" 
+                        strokeLinecap="round" 
+                      />
+
+                      {/* 3. Pointer halo and solid indicator dot */}
+                      <circle cx={xp} cy={yp} r="11" fill={statusColorHex} fillOpacity="0.25" />
+                      <circle cx={xp} cy={yp} r="6.5" fill="#ffffff" stroke={statusColorHex} strokeWidth="3.5" className="shadow-md" />
                     </svg>
 
                     {/* Absolutely Centered Overlay inside Semi-circle */}
-                    <div className="absolute inset-0 flex flex-col items-center justify-end pb-2.5 text-center pointer-events-none">
-
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pt-8 text-center pointer-events-none">
                       {/* Main Dynamic Large Percentage Metric with status-following text color */}
-                      <div className={`text-4xl sm:text-4.5xl font-black tracking-tighter ${statusColorClass} leading-none select-none`}>
-                        +{clampedHealth}%
+                      <div className={`text-4.5xl sm:text-5xl font-black tracking-tight ${statusColorClass} leading-none select-none`}>
+                        {clampedHealth}%
                       </div>
                     </div>
                   </div>
@@ -949,32 +939,60 @@ export default function DashboardView({
           </div>
 
           {/* Elegant Parameters & Interpretation Block with requested info */}
-          <div className="border-t border-slate-150 pt-3.5 mt-2.5 text-[10.5px] text-slate-600 leading-relaxed font-sans space-y-2">
+          <div className="border-t border-slate-100 pt-4 mt-3 text-[11px] text-slate-600 leading-relaxed font-sans space-y-4">
             <div>
-              <span className="font-bold text-slate-800 block">Formula Perhitungan:</span>
-              <div className="bg-slate-50 p-2 rounded border border-slate-100 font-mono text-[9.5px] text-slate-500 mt-1 select-all">
+              <h4 className="text-xs font-bold text-slate-800 font-sans mb-1.5">Formula Perhitungan:</h4>
+              <div className="bg-slate-50 border border-slate-100 rounded-xl py-2.5 px-4 text-center font-mono text-[10px] text-slate-500 tracking-wide select-all">
                 Green = 100 | Yellow = 70 | Red = 35 | Blocked = 0
               </div>
-              <p className="text-[9px] text-slate-400 mt-0.5 leading-tight">
-                Skor dihitung dari rerata bobot status program tracker.
+              <p className="text-[10px] text-slate-400 italic mt-1.5 leading-tight">
+                * Skor dihitung dari rerata bobot status program tracker.
               </p>
             </div>
             
             <div>
-              <span className="font-bold text-slate-800 block">Interpretasi Status:</span>
-              <div className="grid grid-cols-3 gap-1 mt-1 font-mono text-[9px] text-center">
-                <div className="bg-emerald-50 text-emerald-800 border border-emerald-100/50 p-1 rounded">
-                  <span className="font-bold block">&ge;80</span>
-                  Sehat
-                </div>
-                <div className="bg-amber-50 text-amber-800 border border-amber-100/50 p-1 rounded">
-                  <span className="font-bold block">65-79</span>
-                  Perhatian
-                </div>
-                <div className="bg-rose-50 text-rose-800 border border-rose-100/50 p-1 rounded font-medium">
-                  <span className="font-bold block">&lt;65</span>
-                  Intervensi DZ
-                </div>
+              <h4 className="text-xs font-bold text-slate-800 font-sans mb-2">Interpretasi Status:</h4>
+              <div className="grid grid-cols-3 gap-2 font-sans text-center">
+                {(() => {
+                  const clampedHealth = Math.max(0, Math.min(100, metrics.healthIndex));
+                  const isSehat = clampedHealth >= 80;
+                  const isPerhatian = clampedHealth >= 65 && clampedHealth < 80;
+                  const isIntervensi = clampedHealth < 65;
+
+                  return (
+                    <>
+                      {/* Card 1: Sehat */}
+                      <div className={`p-2.5 rounded-xl border transition-all duration-300 ${
+                        isSehat 
+                          ? "bg-[#f4fbf7] border-[#10b981] border-2 ring-1 ring-[#10b981]/10 shadow-sm" 
+                          : "bg-slate-50/50 border-slate-100 text-slate-400"
+                      }`}>
+                        <span className={`text-xs font-black block ${isSehat ? "text-[#137333]" : "text-slate-500"}`}>&ge;80</span>
+                        <span className={`text-[10px] font-bold block mt-0.5 ${isSehat ? "text-[#137333]" : "text-slate-400"}`}>Sehat</span>
+                      </div>
+
+                      {/* Card 2: Perhatian */}
+                      <div className={`p-2.5 rounded-xl border transition-all duration-300 ${
+                        isPerhatian 
+                          ? "bg-[#fffbf0] border-[#f59e0b] border-2 ring-1 ring-[#f59e0b]/10 shadow-sm" 
+                          : "bg-slate-50/50 border-slate-100 text-slate-400"
+                      }`}>
+                        <span className={`text-xs font-black block ${isPerhatian ? "text-[#b25e00]" : "text-slate-500"}`}>65-79</span>
+                        <span className={`text-[10px] font-bold block mt-0.5 ${isPerhatian ? "text-[#b25e00]" : "text-slate-400"}`}>Perhatian</span>
+                      </div>
+
+                      {/* Card 3: Intervensi DZ */}
+                      <div className={`p-2.5 rounded-xl border transition-all duration-300 ${
+                        isIntervensi 
+                          ? "bg-[#fff5f5] border-[#f43f5e] border-2 ring-1 ring-[#f43f5e]/10 shadow-sm" 
+                          : "bg-slate-50/50 border-slate-100 text-slate-400"
+                      }`}>
+                        <span className={`text-xs font-black block ${isIntervensi ? "text-[#c92a2a]" : "text-slate-500"}`}>&lt;65</span>
+                        <span className={`text-[10px] font-bold block mt-0.5 ${isIntervensi ? "text-[#c92a2a]" : "text-slate-400"}`}>Intervensi DZ</span>
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
             </div>
           </div>
