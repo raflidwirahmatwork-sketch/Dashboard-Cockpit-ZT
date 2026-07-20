@@ -23,6 +23,7 @@ export interface ProgramJob {
   currentMilestone: string;
   keyIssue: string; // Issue or Decision Needed
   actionPlan: string; // Action Plan or ZT Recommendation
+  startDate?: string; // YYYY-MM-DD
   deadline: string; // YYYY-MM-DD
   decisionNeeded: "Yes" | "No";
   dzIntervention: string; // ZT, ZTI, ZTS, ZTE, etc.

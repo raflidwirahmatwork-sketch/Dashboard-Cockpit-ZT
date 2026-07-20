@@ -36,6 +36,7 @@ export default function AddProgramModal({ isOpen, onClose, onSubmit }: AddProgra
   const [currentMilestone, setCurrentMilestone] = useState("");
   const [keyIssue, setKeyIssue] = useState("");
   const [actionPlan, setActionPlan] = useState("");
+  const [startDate, setStartDate] = useState("");
   const [deadline, setDeadline] = useState("");
   const [decisionNeeded, setDecisionNeeded] = useState<"Yes" | "No">("No");
   const [dzIntervention, setDzIntervention] = useState("No");
@@ -151,6 +152,7 @@ export default function AddProgramModal({ isOpen, onClose, onSubmit }: AddProgra
       currentMilestone,
       keyIssue,
       actionPlan,
+      startDate,
       deadline: deadline || new Date().toISOString().split("T")[0],
       decisionNeeded,
       dzIntervention,
@@ -187,6 +189,7 @@ export default function AddProgramModal({ isOpen, onClose, onSubmit }: AddProgra
     setCurrentMilestone("");
     setKeyIssue("");
     setActionPlan("");
+    setStartDate("");
     setDeadline("");
     setDzIntervention("No");
     setZtPicType("preset");
@@ -497,6 +500,18 @@ export default function AddProgramModal({ isOpen, onClose, onSubmit }: AddProgra
                   onChange={(e) => setActionPlan(e.target.value)}
                   placeholder="e.g. Schedule integration coordination meeting"
                   className="w-full text-xs font-medium bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-3 py-2.5 outline-none transition-colors text-slate-800 shadow-sm"
+                />
+              </div>
+
+              <div className="col-span-12 md:col-span-6">
+                <label className="block text-[10px] font-bold text-slate-600 mb-1.5 uppercase tracking-wider">
+                  Start Date
+                </label>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="w-full text-xs font-medium bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-3 py-2 outline-none transition-colors text-slate-800 shadow-sm"
                 />
               </div>
 

@@ -371,16 +371,16 @@ export default function ProgramTrackerView({
 
   const tableMinWidth = useMemo(() => {
     switch (activeSectionTab) {
-      case "I": return "min-w-[2875px]";
+      case "I": return "min-w-[2995px]";
       case "III": return "min-w-[1595px]";
       case "V": return "min-w-[875px]";
-      default: return "min-w-[4555px]";
+      default: return "min-w-[4675px]";
     }
   }, [activeSectionTab]);
 
   const totalActiveCols = useMemo(() => {
     let cols = 3; // No, Topic, Actions
-    if (isColVisible("I")) cols += 18;
+    if (isColVisible("I")) cols += 19;
     if (isColVisible("III")) cols += 9;
     if (isColVisible("V")) cols += 3;
     return cols;
@@ -998,10 +998,11 @@ export default function ProgramTrackerView({
                   <col style={{ width: "160px" }} />
                   <col style={{ width: "160px" }} />
                   <col style={{ width: "160px" }} />
-                  <col style={{ width: "160px" }} />
-                  <col style={{ width: "120px" }} />
-                  <col style={{ width: "160px" }} />
-                  <col style={{ width: "160px" }} />
+                  <col style={{ width: "160px" }} /> {/* Key Issue */}
+                  <col style={{ width: "120px" }} /> {/* ZT Recommendation */}
+                  <col style={{ width: "120px" }} /> {/* Start Date */}
+                  <col style={{ width: "160px" }} /> {/* Deadline */}
+                  <col style={{ width: "160px" }} /> {/* Decision Needed */}
                   <col style={{ width: "160px" }} />
                   <col style={{ width: "120px" }} />
                   <col style={{ width: "120px" }} />
@@ -1049,7 +1050,7 @@ export default function ProgramTrackerView({
                 
                 {/* Section 1 Group block */}
                 {isColVisible("I") && (
-                  <th colSpan={18} className="bg-[#26247b] border-b-2 border-r border-[#1d1b5c] text-white font-bold text-center py-2 uppercase text-[10px] tracking-widest font-mono">
+                  <th colSpan={19} className="bg-[#26247b] border-b-2 border-r border-[#1d1b5c] text-white font-bold text-center py-2 uppercase text-[10px] tracking-widest font-mono">
                     I. PROGRAM TRACKER
                   </th>
                 )}
@@ -1160,6 +1161,22 @@ export default function ProgramTrackerView({
                     <th className="py-2.5 px-2 text-center">Current Milestone</th>
                     <th className="py-2.5 px-2 text-center">Key Issue</th>
                     <th className="py-2.5 px-2 text-center">ZT Recommendation</th>
+                    <th 
+                      className="py-2.5 px-2 cursor-pointer hover:bg-slate-100 transition-colors text-center relative group" 
+                      onClick={() => handleSort("startDate")}
+                    >
+                      <div className="flex items-center justify-center gap-1">
+                        <span>Start Date</span>
+                        <Info className="w-3 h-3 text-slate-400" />
+                      </div>
+                      
+                      {/* Tooltip */}
+                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-1.5 hidden sm:group-hover:block z-50 w-56 p-2.5 bg-slate-900 text-white text-center text-xs rounded-xl shadow-xl border border-slate-700 pointer-events-none normal-case tracking-normal font-sans">
+                        <div className="font-medium text-[11px] text-slate-200">
+                          Tanggal dimulainya pelaksanaan program atau inisiatif utama.
+                        </div>
+                      </div>
+                    </th>
                     <th 
                       className="py-2.5 px-2 cursor-pointer hover:bg-slate-100 transition-colors text-center relative group" 
                       onClick={() => handleSort("deadline")}
@@ -1614,6 +1631,16 @@ export default function ProgramTrackerView({
                             value={p.actionPlan || ""}
                             onSave={(val) => handleSaveField(p.id, p, "actionPlan", val)}
                             className="font-normal text-slate-600"
+                          />
+                        </td>
+
+                        {/* Start Date (Date Selector) */}
+                        <td className="py-1 px-1 text-center">
+                          <SpreadsheetCell
+                            value={p.startDate || ""}
+                            type="date"
+                            onSave={(val) => handleSaveField(p.id, p, "startDate", val)}
+                            className="font-mono text-[10px] text-center"
                           />
                         </td>
 

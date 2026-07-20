@@ -42,6 +42,7 @@ export default function EditProgramModal({ isOpen, program, onClose, onSubmit }:
   const [keyIssue, setKeyIssue] = useState("");
   const [actionPlan, setActionPlan] = useState("");
   const [deadline, setDeadline] = useState("");
+  const [startDate, setStartDate] = useState("");
   const [decisionNeeded, setDecisionNeeded] = useState<"Yes" | "No">("No");
   const [dzIntervention, setDzIntervention] = useState("No");
   const [ztPicType, setZtPicType] = useState<"preset" | "custom">("preset");
@@ -85,6 +86,7 @@ export default function EditProgramModal({ isOpen, program, onClose, onSubmit }:
       setCurrentMilestone(program.currentMilestone || "");
       setKeyIssue(program.keyIssue || "");
       setActionPlan(program.actionPlan || "");
+      setStartDate(program.startDate || "");
       setDeadline(program.deadline || "");
       setDecisionNeeded(program.decisionNeeded || "No");
       setDzIntervention(program.dzIntervention || "No");
@@ -207,6 +209,7 @@ export default function EditProgramModal({ isOpen, program, onClose, onSubmit }:
       currentMilestone,
       keyIssue,
       actionPlan,
+      startDate,
       deadline,
       decisionNeeded,
       dzIntervention,
@@ -594,6 +597,18 @@ export default function EditProgramModal({ isOpen, program, onClose, onSubmit }:
                     onChange={(e) => setActionPlan(e.target.value)}
                     placeholder="Detail action plan or recovery track..."
                     className="w-full text-xs font-medium bg-white border border-slate-200 hover:border-slate-350 rounded-lg p-2.5 outline-none transition-colors text-slate-800 shadow-sm resize-none"
+                  />
+                </div>
+
+                <div className="col-span-12 md:col-span-6">
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                    Start Date
+                  </label>
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="w-full text-xs font-medium bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-3 py-2 outline-none transition-colors text-slate-800 shadow-sm"
                   />
                 </div>
 

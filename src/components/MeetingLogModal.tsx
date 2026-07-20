@@ -394,7 +394,7 @@ export default function MeetingLogModal({
                   </div>
 
                   {/* Elegant Split Metadata Grid */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-5 mt-5 border-t border-slate-100 text-xs">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6 pt-5 mt-5 border-t border-slate-100 text-xs">
                     <div>
                       <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Unit Owner</span>
                       <span className="font-extrabold text-slate-800 text-xs">{activeProgram.owner || "-"}</span>
@@ -410,9 +410,16 @@ export default function MeetingLogModal({
                       <span className="font-bold text-indigo-700 text-xs">{activeProgram.justificationConceptor || "-"}</span>
                     </div>
                     <div>
+                      <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Start Date</span>
+                      <span className="font-extrabold text-indigo-800 text-xs font-mono inline-flex items-center gap-1">
+                        <Calendar className="w-3.5 h-3.5 text-indigo-500" />
+                        {activeProgram.startDate || "TBA"}
+                      </span>
+                    </div>
+                    <div>
                       <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Target Deadline</span>
                       <span className="font-extrabold text-rose-700 text-xs font-mono inline-flex items-center gap-1">
-                        <Calendar className="w-3.5 h-3.5" />
+                        <Calendar className="w-3.5 h-3.5 text-rose-500" />
                         {activeProgram.deadline || "TBA"}
                       </span>
                     </div>
